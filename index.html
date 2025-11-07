@@ -25,7 +25,9 @@
   // ---------- IMPORTS ----------
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
   import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-analytics.js";
-  import { getFirestore, doc, getDoc, updateDoc, addDoc, collection, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-firestore.js";
+  import { 
+    getFirestore, collection, query, where, getDocs, updateDoc, doc, addDoc, serverTimestamp 
+  } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-firestore.js";
 
   // ---------- CONFIG FIREBASE ----------
   const firebaseConfig = {
@@ -75,33 +77,36 @@
     msg.style.color = "black";
 
     try {
-      const codeRef = doc(db, "users", code);  // docId = code
-      const codeSnap = await getDoc(codeRef);
+      // ---------- REQUÊTE FIRESTORE SUR CHAMP code ----------
+      const q = query(collection(db, "users"), where("code", "==", code));
+      const querySnapshot = await getDocs(q);
 
-      if (!codeSnap.exists()) {
+      if (querySnapshot.empty) {
         msg.textContent = "Code invalide.";
         msg.style.color = "red";
         return;
       }
 
+      const codeSnap = querySnapshot.docs[0]; // Premier document correspondant
       const data = codeSnap.data();
+      const docRef = codeSnap.ref;
       const now = new Date();
 
-      // Vérifie si le code est bloqué temporairement
+      // ---------- Vérifie si le code est bloqué ----------
       if (data.blockedUntil && now < data.blockedUntil.toDate()) {
-        const remaining = Math.ceil((data.blockedUntil.toDate() - now)/60000);
+        const remaining = Math.ceil((data.blockedUntil.toDate() - now) / 60000);
         msg.textContent = `Code temporairement bloqué. Réessayez dans ${remaining} min.`;
         msg.style.color = "red";
         return;
       }
 
-      // Code correct → reset tentatives
-      await updateDoc(codeRef, {
+      // ---------- Code correct → reset tentatives ----------
+      await updateDoc(docRef, {
         attempts: 0,
         blockedUntil: null
       });
 
-      // Enregistre l'email utilisé dans logs
+      // ---------- Enregistre l'email utilisé dans logs ----------
       await addDoc(collection(db, "logs"), {
         email: email,
         code: code,
@@ -111,7 +116,7 @@
       msg.textContent = "Connexion réussie — redirection...";
       msg.style.color = "green";
 
-      // Redirection vers CoovaChilli (/logon)
+      // ---------- Redirection vers CoovaChilli (/logon) ----------
       const uamip = params.uamip || "";
       const uamport = params.uamport || "";
       const challenge = params.challenge || "";
@@ -122,23 +127,31 @@
         window.location.href = logonUrl;
       } else if (params.redirect) {
         window.location.href = params.redirect;
+      } else {
+        // Pour test local sans redirection CoovaChilli
+        alert("Connexion réussie !");
       }
 
     } catch (err) {
       console.error(err);
 
-      // Tentative échouée → incrémente compteur et bloque si >= 5
-      const codeRef = doc(db, "users", code);
-      const codeSnap = await getDoc(codeRef);
-      if (codeSnap.exists()) {
-        let attempts = codeSnap.data().attempts || 0;
-        attempts++;
-        const updateData = { attempts: attempts };
-        if (attempts >= 5) {
-          updateData.blockedUntil = new Date(new Date().getTime() + 20*60*1000); // 20 min
-          updateData.attempts = 0;
+      // ---------- Tentative échouée → incrémente compteur ----------
+      try {
+        const q = query(collection(db, "users"), where("code", "==", code));
+        const querySnapshot = await getDocs(q);
+        if (!querySnapshot.empty) {
+          const docRef = querySnapshot.docs[0].ref;
+          let attempts = querySnapshot.docs[0].data().attempts || 0;
+          attempts++;
+          const updateData = { attempts: attempts };
+          if (attempts >= 5) {
+            updateData.blockedUntil = new Date(new Date().getTime() + 20*60*1000); // 20 min
+            updateData.attempts = 0;
+          }
+          await updateDoc(docRef, updateData);
         }
-        await updateDoc(codeRef, updateData);
+      } catch (e) {
+        console.error("Erreur mise à jour tentatives :", e);
       }
 
       msg.textContent = "Erreur interne. Réessayez.";
@@ -146,6 +159,7 @@
     }
   });
 </script>
+
 
   </body>
 </html>
