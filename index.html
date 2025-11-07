@@ -21,13 +21,11 @@
     <p id="message"></p>
   </div>
 
-  <script type="module">
+ <script type="module">
   // ---------- IMPORTS ----------
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
   import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-analytics.js";
-  import { 
-    getFirestore, collection, query, where, getDocs, updateDoc, doc, addDoc, serverTimestamp 
-  } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-firestore.js";
+  import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-firestore.js";
 
   // ---------- CONFIG FIREBASE ----------
   const firebaseConfig = {
@@ -77,7 +75,7 @@
     msg.style.color = "black";
 
     try {
-      // ---------- REQUÊTE FIRESTORE SUR CHAMP code ----------
+      // ---------- RECHERCHE DOCUMENT PAR CHAMP code ----------
       const q = query(collection(db, "users"), where("code", "==", code));
       const querySnapshot = await getDocs(q);
 
@@ -87,36 +85,20 @@
         return;
       }
 
-      const codeSnap = querySnapshot.docs[0]; // Premier document correspondant
+      const codeSnap = querySnapshot.docs[0];
       const data = codeSnap.data();
-      const docRef = codeSnap.ref;
-      const now = new Date();
 
-      // ---------- Vérifie si le code est bloqué ----------
-      if (data.blockedUntil && now < data.blockedUntil.toDate()) {
-        const remaining = Math.ceil((data.blockedUntil.toDate() - now) / 60000);
-        msg.textContent = `Code temporairement bloqué. Réessayez dans ${remaining} min.`;
+      // Vérifie si le document est actif
+      if (!data.actif) {
+        msg.textContent = "Code désactivé.";
         msg.style.color = "red";
         return;
       }
 
-      // ---------- Code correct → reset tentatives ----------
-      await updateDoc(docRef, {
-        attempts: 0,
-        blockedUntil: null
-      });
-
-      // ---------- Enregistre l'email utilisé dans logs ----------
-      await addDoc(collection(db, "logs"), {
-        email: email,
-        code: code,
-        timestamp: serverTimestamp()
-      });
-
       msg.textContent = "Connexion réussie — redirection...";
       msg.style.color = "green";
 
-      // ---------- Redirection vers CoovaChilli (/logon) ----------
+      // ---------- Redirection vers CoovaChilli si paramètres présents ----------
       const uamip = params.uamip || "";
       const uamport = params.uamport || "";
       const challenge = params.challenge || "";
@@ -128,37 +110,18 @@
       } else if (params.redirect) {
         window.location.href = params.redirect;
       } else {
-        // Pour test local sans redirection CoovaChilli
+        // Test local sans UAM
         alert("Connexion réussie !");
       }
 
     } catch (err) {
       console.error(err);
-
-      // ---------- Tentative échouée → incrémente compteur ----------
-      try {
-        const q = query(collection(db, "users"), where("code", "==", code));
-        const querySnapshot = await getDocs(q);
-        if (!querySnapshot.empty) {
-          const docRef = querySnapshot.docs[0].ref;
-          let attempts = querySnapshot.docs[0].data().attempts || 0;
-          attempts++;
-          const updateData = { attempts: attempts };
-          if (attempts >= 5) {
-            updateData.blockedUntil = new Date(new Date().getTime() + 20*60*1000); // 20 min
-            updateData.attempts = 0;
-          }
-          await updateDoc(docRef, updateData);
-        }
-      } catch (e) {
-        console.error("Erreur mise à jour tentatives :", e);
-      }
-
       msg.textContent = "Erreur interne. Réessayez.";
       msg.style.color = "red";
     }
   });
 </script>
+
 
 
   </body>
