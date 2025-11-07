@@ -8,7 +8,20 @@
 </head>
 <body>
 
-    <script type="module">
+      <div class="container">
+    <h1>Connexion Wi-Fi</h1>
+    <p>Entrez votre email et votre code unique pour accéder à Internet.</p>
+
+    <form id="loginForm">
+      <input type="email" id="email" placeholder="Votre email" required>
+      <input type="text" id="code" placeholder="Votre code unique" required>
+      <button type="submit">Se connecter</button>
+    </form>
+
+    <p id="message"></p>
+  </div>
+
+  <script type="module">
   // ---------- IMPORTS ----------
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
   import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-analytics.js";
@@ -133,20 +146,6 @@
     }
   });
 </script>
-
-
-  <div class="container">
-    <h1>Connexion Wi-Fi</h1>
-    <p>Entrez votre email et votre code unique pour accéder à Internet.</p>
-
-    <form id="loginForm">
-      <input type="email" id="email" placeholder="Votre email" required>
-      <input type="text" id="code" placeholder="Votre code unique" required>
-      <button type="submit">Se connecter</button>
-    </form>
-
-    <p id="message"></p>
-  </div>
 
   </body>
 </html>
