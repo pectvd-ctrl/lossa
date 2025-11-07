@@ -98,22 +98,7 @@
       msg.textContent = "Connexion réussie — redirection...";
       msg.style.color = "green";
 
-      // ---------- Redirection vers CoovaChilli si paramètres présents ----------
-      const uamip = params.uamip || "";
-      const uamport = params.uamport || "";
-      const challenge = params.challenge || "";
-      const mac = params.mac || "";
-
-      if (uamip && uamport) {
-        const logonUrl = `http://${uamip}:${uamport}/logon?username=${encodeURIComponent(email)}&challenge=${encodeURIComponent(challenge)}&mac=${encodeURIComponent(mac)}`;
-        window.location.href = logonUrl;
-      } else if (params.redirect) {
-        window.location.href = params.redirect;
-      } else {
-        // Test local sans UAM
-        alert("Connexion réussie !");
-      }
-
+    
     } catch (err) {
       console.error(err);
       msg.textContent = "Erreur interne. Réessayez.";
