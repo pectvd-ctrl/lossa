@@ -76,7 +76,7 @@ validateBtn.addEventListener("click", async () => {
 
   try {
     console.log("Récupération du document Firestore...");
-    const docRef = doc(db, "user", "lossa"); // tu peux remplacer "lossa" par user.uid plus tard
+    const docRef = doc(db, "user", "lossa"); // document contenant le code
     const docSnap = await getDoc(docRef);
 
     if (!docSnap.exists()) {
@@ -90,14 +90,14 @@ validateBtn.addEventListener("click", async () => {
 
     const data = docSnap.data();
 
-    if (!data.code) {
-      console.error("Champ 'code' manquant dans le document !");
+    if (!data.codax) {
+      console.error("Champ 'codax' manquant dans le document !");
       errorBox.textContent = "Erreur : code non défini";
       errorBox.classList.remove("hidden");
       return;
     }
 
-    const correctCode = String(data.code).trim();
+    const correctCode = String(data.codax).trim(); // Accès au nouveau champ
     console.log("Code Firestore :", correctCode, "| Type :", typeof correctCode);
 
     if (codeEntered === correctCode) {
@@ -131,6 +131,7 @@ togglePassword.addEventListener("click", () => {
   }
 });
 </script>
+
 
 
 </body>
