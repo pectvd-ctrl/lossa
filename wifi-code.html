@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Accès WiFi</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <main class="container">
+    <section class="card">
+
+      <h2>Accès WiFi sécurisé</h2>
+      <p>Entrez le code pour accéder au WiFi.</p>
+
+      <input type="password" id="wifiCode" class="input" placeholder="Entrez le code">
+      <button id="validateBtn" class="btn btn-primary">Valider</button>
+
+      <p id="error" class="error hidden"></p>
+
+    </section>
+  </main>
+
+  <script>
+    const CORRECT_CODE = "0123456789";
+
+    const codeInput = document.getElementById("wifiCode");
+    const validateBtn = document.getElementById("validateBtn");
+    const errorBox = document.getElementById("error");
+
+    validateBtn.addEventListener("click", () => {
+      const code = codeInput.value.trim();
+
+      if (code === CORRECT_CODE) {
+        window.location.href = "wifi-final.html"; // page d'accès final
+      } else {
+        errorBox.textContent = "Code incorrect";
+        errorBox.classList.remove("hidden");
+      }
+    });
+  </script>
+
+</body>
+</html>
