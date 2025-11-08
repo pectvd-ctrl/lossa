@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Accès WiFi</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
@@ -14,7 +14,16 @@
       <h2>Accès WiFi sécurisé</h2>
       <p>Entrez le code pour accéder au WiFi.</p>
 
-      <input type="password" id="wifiCode" class="input" placeholder="Entrez le code">
+      <div id="user-info" class="hidden">
+        <p id="user-email" class="email"></p>
+      </div>
+
+      <!-- Champ avec icône œil -->
+      <div class="input-wrap">
+        <input type="password" id="wifiCode" class="input" placeholder="Entrez le code">
+        <span id="togglePassword" class="toggle-eye">👁️</span>
+      </div>
+
       <button id="validateBtn" class="btn btn-primary">Valider</button>
 
       <p id="error" class="error hidden"></p>
@@ -22,21 +31,65 @@
     </section>
   </main>
 
-  <script>
+  <!-- JavaScript Firebase + Vérification utilisateur -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDLZZyoiHysKOL1XwnOUV2-QhdSsZZCHbs",
+      authDomain: "lossa-b3-11.firebaseapp.com",
+      projectId: "lossa-b3-11",
+      storageBucket: "lossa-b3-11.firebasestorage.app",
+      messagingSenderId: "637445869503",
+      appId: "1:637445869503:web:3948cb73f023a753e29b0a",
+      measurementId: "G-4720V8DGPK"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
     const CORRECT_CODE = "0123456789";
 
     const codeInput = document.getElementById("wifiCode");
     const validateBtn = document.getElementById("validateBtn");
     const errorBox = document.getElementById("error");
+    const userEmailElement = document.getElementById("user-email");
+    const userInfo = document.getElementById("user-info");
 
+    // Vérifier si l'utilisateur vient bien de Google Login
+    onAuthStateChanged(auth, user => {
+      if (!user) {
+        window.location.href = "index.html"; // Retour si pas connecté
+        return;
+      }
+
+      userEmailElement.textContent = "Utilisateur: " + user.email;
+      userInfo.classList.remove("hidden");
+    });
+
+    // Vérification du code WiFi
     validateBtn.addEventListener("click", () => {
       const code = codeInput.value.trim();
 
       if (code === CORRECT_CODE) {
-        window.location.href = "wifi-final.html"; // page d'accès final
+        window.location.href = "wifi-final.html";
       } else {
         errorBox.textContent = "Code incorrect";
         errorBox.classList.remove("hidden");
+      }
+    });
+
+    // Afficher / masquer le code
+    const togglePassword = document.getElementById("togglePassword");
+    
+    togglePassword.addEventListener("click", () => {
+      if (codeInput.type === "password") {
+        codeInput.type = "text";
+        togglePassword.textContent = "🙈"; // Icône quand c’est visible
+      } else {
+        codeInput.type = "password";
+        togglePassword.textContent = "👁️"; // Icône quand c’est masqué
       }
     });
   </script>
