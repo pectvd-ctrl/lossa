@@ -31,7 +31,6 @@
     </section>
   </main>
 
-  <!-- JavaScript Firebase + Vérification utilisateur -->
   <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
   import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-auth.js";
@@ -60,7 +59,7 @@
   // Vérifier si l'utilisateur est connecté via Firebase Auth
   onAuthStateChanged(auth, user => {
     if (!user) {
-      window.location.href = "index.html"; // redirige si pas connecté
+      window.location.href = "index.html";
       return;
     }
     userEmailElement.textContent = "Utilisateur: " + user.email;
@@ -72,19 +71,19 @@
     const codeEntered = codeInput.value.trim();
 
     try {
-      const docRef = doc(db, "user", "lossa"); // document qui contient le code
+      const docRef = doc(db, "user", "lossa");
       const docSnap = await getDoc(docRef);
 
       if (docSnap.exists()) {
-        // convertir en string et enlever espaces invisibles
+        // convertir le code Firestore en string
         const correctCode = String(docSnap.data().code).trim();
 
-        // debug : afficher dans console
+        // debug
         console.log("Code saisi :", codeEntered, "| Type :", typeof codeEntered);
         console.log("Code Firestore :", correctCode, "| Type :", typeof correctCode);
 
         if (codeEntered === correctCode) {
-          window.location.href = "wifi-final.html"; // code correct
+          window.location.href = "wifi-final.html";
         } else {
           errorBox.textContent = "Code incorrect";
           errorBox.classList.remove("hidden");
