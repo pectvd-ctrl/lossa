@@ -45,7 +45,6 @@ const firebaseConfig = {
   measurementId: "G-4720V8DGPK"
 };
 
-console.log("Initialisation Firebase...");
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
@@ -57,14 +56,11 @@ const userEmailElement = document.getElementById("user-email");
 const userInfo = document.getElementById("user-info");
 
 // Vérifier si l'utilisateur est connecté
-console.log("Vérification de l'utilisateur connecté...");
 onAuthStateChanged(auth, user => {
   if (!user) {
-    console.warn("Aucun utilisateur connecté, redirection...");
     window.location.href = "index.html";
     return;
   }
-  console.log("Utilisateur connecté :", user.email, "| UID :", user.uid);
   userEmailElement.textContent = "Utilisateur: " + user.email;
   userInfo.classList.remove("hidden");
 });
@@ -72,45 +68,35 @@ onAuthStateChanged(auth, user => {
 // Vérification du code WiFi depuis Firestore
 validateBtn.addEventListener("click", async () => {
   const codeEntered = codeInput.value.trim();
-  console.log("Bouton Valider cliqué. Code saisi :", codeEntered);
 
   try {
-    console.log("Récupération du document Firestore...");
     const docRef = doc(db, "user", "lossa"); // document contenant le code
     const docSnap = await getDoc(docRef);
 
     if (!docSnap.exists()) {
-      console.error("Document introuvable !");
       errorBox.textContent = "Erreur : code introuvable";
       errorBox.classList.remove("hidden");
       return;
     }
 
-    console.log("Document trouvé :", docSnap.data());
-
     const data = docSnap.data();
 
     if (!data.codax) {
-      console.error("Champ 'codax' manquant dans le document !");
       errorBox.textContent = "Erreur : code non défini";
       errorBox.classList.remove("hidden");
       return;
     }
 
     const correctCode = String(data.codax).trim(); // Accès au nouveau champ
-    console.log("Code Firestore :", correctCode, "| Type :", typeof correctCode);
 
     if (codeEntered === correctCode) {
-      console.log("Code correct ! Redirection vers wifi-final.html...");
       window.location.href = "wifi-final.html";
     } else {
-      console.warn("Code incorrect !");
       errorBox.textContent = "Code incorrect";
       errorBox.classList.remove("hidden");
     }
 
   } catch (error) {
-    console.error("Erreur lecture Firestore :", error);
     errorBox.textContent = "Erreur serveur, réessayez plus tard";
     errorBox.classList.remove("hidden");
   }
@@ -119,15 +105,12 @@ validateBtn.addEventListener("click", async () => {
 // Afficher / masquer le code
 const togglePassword = document.getElementById("togglePassword");
 togglePassword.addEventListener("click", () => {
-  console.log("Toggle Password cliqué. Type actuel :", codeInput.type);
   if (codeInput.type === "password") {
     codeInput.type = "text";
     togglePassword.textContent = "🙈";
-    console.log("Code visible");
   } else {
     codeInput.type = "password";
     togglePassword.textContent = "👁️";
-    console.log("Code masqué");
   }
 });
 </script>
