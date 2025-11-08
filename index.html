@@ -8,26 +8,25 @@
 </head>
 <body>
 
-      <div class="container">
-    <h1>Connexion Wi-Fi</h1>
-    <p>Entrez votre email et votre code unique pour accéder à Internet.</p>
+<div class="container">
+  <h1>Connexion Wi-Fi</h1>
+  <p>Entrez votre email et votre code unique pour accéder à Internet.</p>
 
-    <form id="loginForm">
-      <input type="email" id="email" placeholder="Votre email" required>
-      <input type="text" id="code" placeholder="Votre code unique" required>
-      <button type="submit">Se connecter</button>
-    </form>
+  <form id="loginForm">
+    <input type="email" id="email" placeholder="Votre email" required>
+    <input type="text" id="code" placeholder="Votre code unique" required>
+    <button type="submit">Se connecter</button>
+  </form>
 
-    <p id="message"></p>
-  </div>
+  <p id="message"></p>
+</div>
 
-  
-
- <script type="module">
+<script type="module">
   // ---------- IMPORTS ----------
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
   import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-analytics.js";
   import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-firestore.js";
+  import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-auth.js";
 
   // ---------- CONFIG FIREBASE ----------
   const firebaseConfig = {
@@ -44,22 +43,10 @@
   const app = initializeApp(firebaseConfig);
   const analytics = getAnalytics(app);
   const db = getFirestore(app);
+  const auth = getAuth(app);
 
-  // ---------- RÉCUPÉRATION DU FORMULAIRE ----------
   const form = document.getElementById('loginForm');
   const msg = document.getElementById('message');
-
-  // ---------- PARAMÈTRES UAM ----------
-  function getQueryParams() {
-    const params = {};
-    location.search.replace(/^\?/, '').split('&').forEach(pair => {
-      if (!pair) return;
-      const [k, v] = pair.split('=').map(decodeURIComponent);
-      params[k] = v === undefined ? '' : v;
-    });
-    return params;
-  }
-  const params = getQueryParams();
 
   // ---------- GESTION DU FORMULAIRE ----------
   form.addEventListener('submit', async (e) => {
@@ -73,11 +60,17 @@
       return;
     }
 
-    msg.textContent = "Vérification...";
+    msg.textContent = "Connexion à Firebase...";
     msg.style.color = "black";
 
     try {
-      // ---------- RECHERCHE DOCUMENT PAR CHAMP code ----------
+      // 1️⃣ Connexion anonyme (pour satisfaire `request.auth != null`)
+      const userCred = await signInAnonymously(auth);
+      console.log("Utilisateur connecté :", userCred.user.uid);
+
+      msg.textContent = "Vérification du code...";
+      
+      // 2️⃣ Requête Firestore
       const q = query(collection(db, "users"), where("code", "==", code));
       const querySnapshot = await getDocs(q);
 
@@ -90,7 +83,6 @@
       const codeSnap = querySnapshot.docs[0];
       const data = codeSnap.data();
 
-      // Vérifie si le document est actif
       if (!data.actif) {
         msg.textContent = "Code désactivé.";
         msg.style.color = "red";
@@ -100,16 +92,16 @@
       msg.textContent = "Connexion réussie — redirection...";
       msg.style.color = "green";
 
-    
+      // 3️⃣ (Optionnel) Redirection
+      // window.location.href = "portail.html";
+
     } catch (err) {
       console.error(err);
-      msg.textContent = "Erreur interne. Réessayez.";
+      msg.textContent = "Erreur : " + err.message;
       msg.style.color = "red";
     }
   });
 </script>
 
-
-
-  </body>
+</body>
 </html>
