@@ -76,7 +76,12 @@
       const docSnap = await getDoc(docRef);
 
       if (docSnap.exists()) {
-        const correctCode = docSnap.data().code;
+        // convertir en string et enlever espaces invisibles
+        const correctCode = String(docSnap.data().code).trim();
+
+        // debug : afficher dans console
+        console.log("Code saisi :", codeEntered, "| Type :", typeof codeEntered);
+        console.log("Code Firestore :", correctCode, "| Type :", typeof correctCode);
 
         if (codeEntered === correctCode) {
           window.location.href = "wifi-final.html"; // code correct
@@ -106,8 +111,7 @@
       togglePassword.textContent = "👁️";
     }
   });
-</script>
-
+  </script>
 
 </body>
 </html>
