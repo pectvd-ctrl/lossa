@@ -3,99 +3,40 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Connexion Google</title>
-  <link rel="stylesheet" href="styles.css">
+  <title>Accès WiFi</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
   <main class="container">
     <section class="card">
-      <h1>Connexion Google</h1>
 
-      <div id="user-info" class="hidden">
-        <img id="user-photo" class="avatar" alt="Photo utilisateur">
-        <div class="user-text">
-          <div id="user-name" class="name"></div>
-          <div id="user-email" class="email"></div>
-        </div>
-      </div>
+      <h2>Accès WiFi sécurisé</h2>
+      <p>Entrez le code pour accéder au WiFi.</p>
 
-      <button id="google-signin" class="btn btn-primary">Se connecter avec Google</button>
-      <button id="signout" class="btn btn-ghost hidden">Se déconnecter</button>
+      <input type="password" id="wifiCode" class="input" placeholder="Entrez le code">
+      <button id="validateBtn" class="btn btn-primary">Valider</button>
 
-      <p class="note">Connexion rapide et sécurisée.</p>
-      <div id="error" class="error hidden"></div>
+      <p id="error" class="error hidden"></p>
+
     </section>
   </main>
 
-  <!-- JavaScript intégré -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
-    import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-auth.js";
+  <script>
+    const CORRECT_CODE = "0123456789";
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyDLZZyoiHysKOL1XwnOUV2-QhdSsZZCHbs",
-      authDomain: "lossa-b3-11.firebaseapp.com",
-      projectId: "lossa-b3-11",
-      storageBucket: "lossa-b3-11.firebasestorage.app",
-      messagingSenderId: "637445869503",
-      appId: "1:637445869503:web:3948cb73f023a753e29b0a",
-      measurementId: "G-4720V8DGPK"
-    };
+    const codeInput = document.getElementById("wifiCode");
+    const validateBtn = document.getElementById("validateBtn");
+    const errorBox = document.getElementById("error");
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const provider = new GoogleAuthProvider();
+    validateBtn.addEventListener("click", () => {
+      const code = codeInput.value.trim();
 
-    const signInBtn = document.getElementById('google-signin');
-    const signOutBtn = document.getElementById('signout');
-    const userInfo = document.getElementById('user-info');
-    const userName = document.getElementById('user-name');
-    const userEmail = document.getElementById('user-email');
-    const userPhoto = document.getElementById('user-photo');
-    const errorBox = document.getElementById('error');
-
-    function showError(message){
-      errorBox.textContent = message;
-      errorBox.classList.remove('hidden');
-    }
-
-    function clearError(){
-      errorBox.textContent = "";
-      errorBox.classList.add('hidden');
-    }
-
-    signInBtn.addEventListener('click', async () => {
-      clearError();
-      try {
-        await signInWithPopup(auth, provider);
-      } catch (err){
-        showError(err.message);
-      }
-    });
-
-    signOutBtn.addEventListener('click', async () => {
-      clearError();
-      try {
-        await signOut(auth);
-      } catch (err){
-        showError(err.message);
-      }
-    });
-
-    onAuthStateChanged(auth, user => {
-      if (user){
-        userName.textContent = user.displayName;
-        userEmail.textContent = user.email;
-        userPhoto.src = user.photoURL;
-
-        userInfo.classList.remove("hidden");
-        signOutBtn.classList.remove("hidden");
-        signInBtn.classList.add("hidden");
+      if (code === CORRECT_CODE) {
+        window.location.href = "wifi-final.html"; // page d'accès final
       } else {
-        userInfo.classList.add("hidden");
-        signOutBtn.classList.add("hidden");
-        signInBtn.classList.remove("hidden");
+        errorBox.textContent = "Code incorrect";
+        errorBox.classList.remove("hidden");
       }
     });
   </script>
