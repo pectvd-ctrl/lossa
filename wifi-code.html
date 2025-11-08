@@ -18,7 +18,6 @@
         <p id="user-email" class="email"></p>
       </div>
 
-      <!-- Champ avec icône œil -->
       <div class="input-wrap">
         <input type="password" id="wifiCode" class="input" placeholder="Entrez le code">
         <span id="togglePassword" class="toggle-eye">👁️</span>
@@ -56,7 +55,7 @@
   const userEmailElement = document.getElementById("user-email");
   const userInfo = document.getElementById("user-info");
 
-  // Vérifier si l'utilisateur est connecté via Firebase Auth
+  // Vérifier si l'utilisateur est connecté
   onAuthStateChanged(auth, user => {
     if (!user) {
       window.location.href = "index.html";
@@ -75,10 +74,8 @@
       const docSnap = await getDoc(docRef);
 
       if (docSnap.exists()) {
-        // convertir le code Firestore en string
-        const correctCode = String(docSnap.data().code).trim();
+        const correctCode = docSnap.data().code.trim(); // code déjà string
 
-        // debug
         console.log("Code saisi :", codeEntered, "| Type :", typeof codeEntered);
         console.log("Code Firestore :", correctCode, "| Type :", typeof correctCode);
 
