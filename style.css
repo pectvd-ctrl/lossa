@@ -62,3 +62,18 @@ body {
   color: red;
   margin-top: 12px;
 }
+
+.input-wrap {
+  position: relative;
+  width: 100%;
+}
+
+.toggle-eye {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  font-size: 18px;
+  user-select: none;
+}
