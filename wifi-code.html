@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Accès WiFi</title>
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
@@ -33,66 +33,81 @@
 
   <!-- JavaScript Firebase + Vérification utilisateur -->
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
-    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-auth.js";
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
+  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-auth.js";
+  import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-firestore.js";
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyDLZZyoiHysKOL1XwnOUV2-QhdSsZZCHbs",
-      authDomain: "lossa-b3-11.firebaseapp.com",
-      projectId: "lossa-b3-11",
-      storageBucket: "lossa-b3-11.firebasestorage.app",
-      messagingSenderId: "637445869503",
-      appId: "1:637445869503:web:3948cb73f023a753e29b0a",
-      measurementId: "G-4720V8DGPK"
-    };
+  const firebaseConfig = {
+    apiKey: "AIzaSyDLZZyoiHysKOL1XwnOUV2-QhdSsZZCHbs",
+    authDomain: "lossa-b3-11.firebaseapp.com",
+    projectId: "lossa-b3-11",
+    storageBucket: "lossa-b3-11.firebasestorage.app",
+    messagingSenderId: "637445869503",
+    appId: "1:637445869503:web:3948cb73f023a753e29b0a",
+    measurementId: "G-4720V8DGPK"
+  };
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
 
-    const CORRECT_CODE = "0123456789";
+  const codeInput = document.getElementById("wifiCode");
+  const validateBtn = document.getElementById("validateBtn");
+  const errorBox = document.getElementById("error");
+  const userEmailElement = document.getElementById("user-email");
+  const userInfo = document.getElementById("user-info");
 
-    const codeInput = document.getElementById("wifiCode");
-    const validateBtn = document.getElementById("validateBtn");
-    const errorBox = document.getElementById("error");
-    const userEmailElement = document.getElementById("user-email");
-    const userInfo = document.getElementById("user-info");
+  // Vérifier si l'utilisateur est connecté via Firebase Auth
+  onAuthStateChanged(auth, user => {
+    if (!user) {
+      window.location.href = "index.html"; // redirige si pas connecté
+      return;
+    }
+    userEmailElement.textContent = "Utilisateur: " + user.email;
+    userInfo.classList.remove("hidden");
+  });
 
-    // Vérifier si l'utilisateur vient bien de Google Login
-    onAuthStateChanged(auth, user => {
-      if (!user) {
-        window.location.href = "index.html"; // Retour si pas connecté
-        return;
-      }
+  // Vérification du code WiFi depuis Firestore
+  validateBtn.addEventListener("click", async () => {
+    const codeEntered = codeInput.value.trim();
 
-      userEmailElement.textContent = "Utilisateur: " + user.email;
-      userInfo.classList.remove("hidden");
-    });
+    try {
+      const docRef = doc(db, "user", "lossa"); // document qui contient le code
+      const docSnap = await getDoc(docRef);
 
-    // Vérification du code WiFi
-    validateBtn.addEventListener("click", () => {
-      const code = codeInput.value.trim();
+      if (docSnap.exists()) {
+        const correctCode = docSnap.data().code;
 
-      if (code === CORRECT_CODE) {
-        window.location.href = "wifi-final.html";
+        if (codeEntered === correctCode) {
+          window.location.href = "wifi-final.html"; // code correct
+        } else {
+          errorBox.textContent = "Code incorrect";
+          errorBox.classList.remove("hidden");
+        }
       } else {
-        errorBox.textContent = "Code incorrect";
+        errorBox.textContent = "Erreur : code introuvable";
         errorBox.classList.remove("hidden");
       }
-    });
+    } catch (error) {
+      console.error("Erreur lecture Firestore :", error);
+      errorBox.textContent = "Erreur serveur, réessayez plus tard";
+      errorBox.classList.remove("hidden");
+    }
+  });
 
-    // Afficher / masquer le code
-    const togglePassword = document.getElementById("togglePassword");
-    
-    togglePassword.addEventListener("click", () => {
-      if (codeInput.type === "password") {
-        codeInput.type = "text";
-        togglePassword.textContent = "🙈"; // Icône quand c’est visible
-      } else {
-        codeInput.type = "password";
-        togglePassword.textContent = "👁️"; // Icône quand c’est masqué
-      }
-    });
-  </script>
+  // Afficher / masquer le code
+  const togglePassword = document.getElementById("togglePassword");
+  togglePassword.addEventListener("click", () => {
+    if (codeInput.type === "password") {
+      codeInput.type = "text";
+      togglePassword.textContent = "🙈";
+    } else {
+      codeInput.type = "password";
+      togglePassword.textContent = "👁️";
+    }
+  });
+</script>
+
 
 </body>
 </html>
